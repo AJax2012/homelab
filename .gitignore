@@ -1,0 +1,4 @@
+.env
+/open-webui/data
+/traefik/config/certs
+.htpasswd

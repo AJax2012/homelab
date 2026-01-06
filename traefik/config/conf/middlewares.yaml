@@ -1,0 +1,13 @@
+http:
+  middlewares:
+    traefik-auth:
+      basicAuth:
+        usersFile: /etc/traefik/conf/.htpasswd
+    n8n:
+      headers:
+        STSSeconds: 315360000
+        browserXSSFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        STSIncludeSubdomains: true
+        STSPreload: true
