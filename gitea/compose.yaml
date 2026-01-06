@@ -1,0 +1,90 @@
+services:
+  gitea:
+    image: gitea/gitea:latest
+    container_name: gitea
+    restart: unless-stopped
+    volumes:
+      - gitea-data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    depends_on:
+      gitea-db:
+        condition: service_healthy
+    networks:
+      - traefik-proxy
+      - internal
+    ports:
+      - ${SSH_PORT:-22}:22
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/healthz"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    env_file:
+      - .env
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - GITEA__database__DB_TYPE=postgres
+      - GITEA__database__HOST=gitea-db:5432
+      - GITEA__database__NAME=${POSTGRES_DB:?POSTGRES_DB not set for gitea}
+      - GITEA__database__USER=${POSTGRES_USER:?POSTGRES_USER not set for gitea}
+      - GITEA__database__PASSWD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD not set for gitea}
+      - GITEA__server__ROOT_URL=https://${SUBDOMAIN:-gitea}.${DOMAIN_NAME:?DOMAIN_NAME not set}/
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-proxy"
+      - "traefik.http.routers.gitea.rule=Host(`${SUBDOMAIN:-gitea}.${DOMAIN_NAME:?DOMAIN_NAME not set}`)"
+      - "traefik.http.routers.gitea.entrypoints=websecure"
+      - "traefik.http.routers.gitea.tls=true"
+      - "traefik.http.routers.gitea.tls.certresolver=cloudflare"
+      - "traefik.http.services.gitea.loadbalancer.server.port=3000"
+      - "traefik.http.services.gitea.loadbalancer.server.scheme=http"
+
+  gitea-db:
+    image: postgres:17-alpine
+    container_name: gitea-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:?POSTGRES_USER not set for gitea}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD not set for gitea}
+      - POSTGRES_DB=${POSTGRES_DB:?POSTGRES_DB not set for gitea}
+    networks:
+      - internal
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:?POSTGRES_USER not set for gitea}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  runner:
+    image: gitea/act_runner:latest
+    container_name: gitea-runner
+    restart: unless-stopped
+    depends_on:
+      gitea:
+        condition: service_healthy
+        restart: true
+    networks:
+      - internal
+    environment:
+      - GITEA_INSTANCE_URL=http://gitea:3000
+      - GITEA_RUNNER_NAME=docker-runner
+      - GITEA_RUNNER_REGISTRATION_TOKEN=${GITEA_RUNNER_REGISTRATION_TOKEN}
+    volumes:
+      - runner-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+
+networks:
+  traefik-proxy:
+    external: true
+  internal:
+    internal: true
+
+volumes:
+  gitea-data:
+  postgres-data:
+  runner-data:

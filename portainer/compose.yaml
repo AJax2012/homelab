@@ -1,0 +1,27 @@
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - portainer-data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - traefik-proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-proxy"
+      - "traefik.http.routers.portainer.rule=Host(`${SUBDOMAIN:-portainer}.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.portainer.entrypoints=websecure"
+      - "traefik.http.routers.portainer.tls=true"
+      - "traefik.http.routers.portainer.tls.certresolver=cloudflare"
+      - "traefik.http.services.portainer.loadbalancer.server.port=9000"
+
+networks:
+  traefik-proxy:
+    external: true
+
+volumes:
+  portainer-data:

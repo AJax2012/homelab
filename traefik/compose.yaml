@@ -1,0 +1,32 @@
+services:
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./config/traefik.yaml:/etc/traefik/traefik.yaml:ro
+      - ./config/conf/middlewares.yaml:/etc/traefik/conf/middlewares.yaml:ro
+      - ./config/conf/.htpasswd:/etc/traefik/conf/.htpasswd:ro
+      - ./config/conf/:/etc/traefik/conf/
+      - ./config/certs:/etc/traefik/certs/
+    environment:
+      - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN} # Cloudflare API token for DNS-01 challenge (optional)
+    networks:
+      - traefik-proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-proxy"
+      - "traefik.http.routers.traefik.rule=Host(`${SUBDOMAIN:-traefik}.${DOMAIN_NAME}`)"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls.certresolver=cloudflare"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.middlewares=traefik-auth@file"
+
+networks:
+  traefik-proxy:
+    external: true
