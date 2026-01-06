@@ -26,6 +26,7 @@ services:
       - "traefik.http.routers.traefik.tls.certresolver=cloudflare"
       - "traefik.http.routers.traefik.service=api@internal"
       - "traefik.http.routers.traefik.middlewares=traefik-auth@file"
+      - "traefik.certificatesresolvers.cloudflare.acme.email=${CLOUDFLARE_EMAIL}"
 
 networks:
   traefik-proxy:

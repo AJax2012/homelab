@@ -25,7 +25,6 @@ entryPoints:
 certificatesResolvers:
   cloudflare:
     acme:
-      email: "adga2012@gmail.com"
       storage: "/etc/traefik/certs/acme.json"
       caServer: "https://acme-v02.api.letsencrypt.org/directory"
       keyType: "EC256"
