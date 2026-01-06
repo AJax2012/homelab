@@ -92,6 +92,7 @@ I would also like to make future improvements for ease of use:
 - Add a script for generating a folder
 - Either Kubernetes or Docker Swarm (I'm currently leaning toward swarm, since it's for a small homelab, not a production environment.)
 - Add a folder for personal projects (So I don't share my private projects with everyone on GitHub).
+- Automate pulling git when changes occur (or displaying a popup/toast somewhere indicating there's an update).
 
 For now though, I'm going to take a break on this project and come back to it. Originally, this was just a project for myself. Then I decided to get something basic set up for a colleague, but I went a little overboard for what I had planned.
 
