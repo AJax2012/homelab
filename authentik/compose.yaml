@@ -1,0 +1,110 @@
+services:
+  authentik-server:
+    image: ghcr.io/goauthentik/server:2025.10.3
+    container_name: authentik-server
+    restart: unless-stopped
+    command: server
+    networks:
+      - traefik-proxy
+      - authentik-internal
+    depends_on:
+      authentik-db:
+        condition: service_healthy
+    env_file:
+    - .env
+    environment:
+      - AUTHENTIK_REDIS__HOST=authentik-redis
+      - AUTHENTIK_POSTGRESQL__HOST=authentik-db
+      - AUTHENTIK_POSTGRESQL__NAME=${POSTGRES_DB:?POSTGRES_DB not set for authentik}
+      - AUTHENTIK_POSTGRESQL__PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD not set for authentik}
+      - AUTHENTIK_POSTGRESQL__USER=${POSTGRES_USER:?POSTGRES_USER not set for authentik}
+      - AUTHENTIK_SECRET_KEY=${AUTHENTIK_SECRET_KEY:?AUTHENTIK_SECRET_KEY not set for authentik}
+      - AUTHENTIK_ERROR_REPORTING__ENABLED=true
+    volumes:
+      - authentik-media:/media
+      - authentik-templates:/templates
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-proxy"
+      - "traefik.http.routers.authentik.rule=Host(`${SUBDOMAIN:-authentik}.${DOMAIN_NAME:?DOMAIN_NAME not set}`)"
+      - "traefik.http.routers.authentik.entrypoints=websecure"
+      - "traefik.http.routers.authentik.tls=true"
+      - "traefik.http.routers.authentik.tls.certresolver=cloudflare"
+      - "traefik.http.services.authentik.loadbalancer.server.port=9000"
+
+  authentik-worker:
+    image: ghcr.io/goauthentik/server:2025.10.3
+    container_name: authentik-worker
+    restart: unless-stopped
+    command: worker
+    user: root
+    networks:
+      - authentik-internal
+    depends_on:
+      authentik-db:
+        condition: service_healthy
+      authentik-redis:
+        condition: service_healthy
+    env_file:
+    - .env
+    environment:
+      - AUTHENTIK_REDIS__HOST=authentik-redis
+      - AUTHENTIK_POSTGRESQL__HOST=authentik-db
+      - AUTHENTIK_POSTGRESQL__NAME=${POSTGRES_DB:?POSTGRES_DB not set for authentik}
+      - AUTHENTIK_POSTGRESQL__PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD not set for authentik}
+      - AUTHENTIK_POSTGRESQL__USER=${POSTGRES_USER:?POSTGRES_USER not set for authentik}
+      - AUTHENTIK_SECRET_KEY=${AUTHENTIK_SECRET_KEY:?AUTHENTIK_SECRET_KEY not set for authentik}
+      - AUTHENTIK_ERROR_REPORTING__ENABLED=true
+    volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - authentik-certs:/certs
+    - authentik-media:/media
+    - authentik-templates:/templates
+
+  authentik-db:
+    image: docker.io/library/postgres:16-alpine
+    container_name: authentik-db
+    restart: unless-stopped
+    networks:
+      - authentik-internal
+    env_file:
+    - .env
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:?POSTGRES_DB not set for authentik}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD not set for authentik}
+      - POSTGRES_USER=${POSTGRES_USER:?POSTGRES_USER not set for authentik}
+    volumes:
+    - authentik-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:?POSTGRES_USER not set for authentik}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  authentik-redis:
+    image: docker.io/library/redis:alpine
+    container_name: authentik-redis
+    restart: unless-stopped
+    command: --save 60 1 --loglevel warning
+    networks:
+      - authentik-internal
+    volumes:
+      - authentik-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  authentik-certs:
+  authentik-media:
+  authentik-templates:
+  authentik-db-data:
+  authentik-redis-data:
+
+networks:
+  traefik-proxy:
+    external: true
+  authentik-internal:
+    internal: true

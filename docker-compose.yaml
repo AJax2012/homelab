@@ -1,11 +1,16 @@
 name: homelab
 include:
+  - authentik/compose.yaml
   - gitea/compose.yaml
   - n8n/compose.yaml
   - open-webui/compose.yaml
   - portainer/compose.yaml
   - traefik/compose.yaml
 services:
+  authentik-server:
+    depends_on:
+      traefik:
+        condition: service_started
   gitea:
     depends_on:
       traefik:
