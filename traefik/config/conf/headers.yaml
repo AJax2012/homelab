@@ -1,0 +1,10 @@
+http:
+  middlewares:
+    n8n:
+      headers:
+        STSSeconds: 315360000
+        browserXSSFilter: true
+        contentTypeNosniff: true
+        forceSTSHeader: true
+        STSIncludeSubdomains: true
+        STSPreload: true
