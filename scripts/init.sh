@@ -21,6 +21,12 @@ if ! docker network ls --format '{{.Name}}' | grep -q "^traefik-proxy$"; then
   docker network create traefik-proxy
 fi
 
+# Check if the user wants to use basic auth or Authentik
+source .env
+if [ $USE_BASIC_AUTH = "false" ]; then
+  exit 0;
+fi
+
 CREDENTIALS_FILE="./traefik/config/conf/.htpasswd"
 
 # create credentials for traefik dashboard if they don't exist
