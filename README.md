@@ -2,6 +2,7 @@
 
 This is the public repository for my homelab. Please note, this is for a small homelab instance, not a production environment. Currently, the services included are:
 
+- [Authentik](https://goauthentik.io/) for SSO.
 - [Gitea](https://about.gitea.com/) for code repository
 - [n8n](https://n8n.io/) for automated AI workflows
 - [Open Web UI](https://openwebui.com/) for local ChatGPT replacement
@@ -24,6 +25,7 @@ NOTE: This has only been tested on ubuntu server.
 
 1. Clone the repository (will update after deployment)
 2. Navigate to each `.env.example`, remove `.example` from the file name and fill out the required values.
+    - NOTE: If you want to use Authentik auth for the traefik dashboard and you don't want to bother with using basic auth, set `USE_BASIC_AUTH` to `false` in the [global .env file](./.env.example)
 3. From the root directory, run `./homelab.sh init`
     - The terminal will prompt you to fill out a username and password for authenticating the traefik dashboard. The password will be hashed. If you don't want this, comment out the following:
       - everything below the variable `CREDENTIALS_FILE` section in the [init script](./scripts/init.sh), then
@@ -77,11 +79,31 @@ networks:
     external: true
 ```
 
+## Using Authentik as an Auth Provider
+
+[Authentik](https://goauthentik.io/) allows you to set up SSO for your applications. Gitea, Open WebUI, and Portainer could all be set up using Open ID Connect (OIDC). Their [Integrations](https://integrations.goauthentik.io/) documentation is very thorough and should be fairly easy to follow. I had to set up the Traefik Dashboard as a [forwardAuth](https://docs.goauthentik.io/add-secure-apps/providers/proxy/server_traefik/) provider, which means it requires a little more setup before you can get it working. See the section below for more details.
+
+### Open WebUI with Authentik
+
+This is explained in the documentation, but this is set up in the Open WebUI's [.env](./open-webui/.env.example) file rather than in the application UI, like most other applications. Once you update the environment variables, restart Open WebUI's docker container and it will be behind the Authentik auth provider.
+
+### Traefik Dashboard: Migrating from Basic Auth to Authentik
+
+If you follow Authentik's documentation, the process for setting up forwardAuth for an application is fairly simple, but it might be a little confusing to see the dashboard not working if you try to run that before the setup is complete. I have [basicAuth](https://doc.traefik.io/traefik/reference/routing-configuration/http/middlewares/basicauth/) set up by default for the traefik dashboard to help make it a bit easier.
+
+In order to migrate your traefik dashboard from basicAuth to forwardAuth, do the following:
+
+1. Set up your Proxy Provider (Forward auth (single application) with explicit authorization flow) and application in the Authentik dashboard.
+2. Edit the created Outpost and set your new application as one of the Selected Applications.
+3. Edit the traefik [.env](./traefik/.env.example) and set `DASHBOARD_AUTH_PROVIDER` to `authentik`.
+4. Restart the traefik container.
+
+You should now see the traefik dashboard protected by Authentik rather than username/password.
+
 ## Future Plans
 
 I plan on adding the following services in the future. I'm not sure beyond that.
 
-- [Authentik](https://goauthentik.io/) for basic SSO.
 - [Grafana](https://grafana.com/) for more advanced container troubleshooting.
 - Centralized logging.
 - A full dashboard for navigating.
