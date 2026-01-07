@@ -8,6 +8,15 @@ services:
     environment:
       - OLLAMA_BASE_URL=http://host.docker.internal:11434
       - OLLAMA_HOST
+      - OAUTH_CLIENT_ID
+      - OAUTH_CLIENT_SECRET
+      - OAUTH_PROVIDER_NAME
+      - OPENID_PROVIDER_URL
+      - OPENID_REDIRECT_URI
+      - WEBUI_URL
+      - ENABLE_OAUTH_SIGNUP=true
+      - ENABLE_LOGIN_FORM=false
+      - OAUTH_MERGE_ACCOUNTS_BY_EMAIL=true
     volumes:
       - open-webui-data:/app/backend/data
     networks:
