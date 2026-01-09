@@ -6,12 +6,14 @@ This is the public repository for my homelab. Please note, this is for a small h
 - [Gitea](https://about.gitea.com/) for code repository
 - [n8n](https://n8n.io/) for automated AI workflows
 - [Open Web UI](https://openwebui.com/) for local ChatGPT replacement
-- [portainer](https://www.portainer.io/) for docker dashboard
+- [Pi-hole](https://pi-hole.net/) for local DNS and DNS forwarding
+- [Portainer](https://www.portainer.io/) for docker dashboard
 - [Traefik](https://traefik.io/traefik) for reverse proxy
 
 ## Table of Contents
 
 - [Installation](#installation)
+  - [Setting up Pi-hole](#setting-up-pi-hole)
 - [Customization](#customization)
   - [Disabling Services](#disabling-services)
   - [Creating New Services](#creating-new-services)
@@ -38,6 +40,28 @@ NOTE: This has only been tested on ubuntu server.
 4. run `docker compose up -d` from the root folder.
     - if you want to run single services (along with traefik), run `./homelab.sh start <service>`.
     - If you want to know more about the [homelab.sh](./homelab.sh) tool, you can run `./homelab.sh -h` to get the help dialogue.
+
+### Setting up Pi-hole
+
+Unfortunately, this part is more dependant on your network configuration than anything else, which is why I didn't include it in the [network's compose.yaml](./networking/compose.yaml) file and set it up so it wouldn't run by default.
+
+1. Create the docker network using the following command:
+
+    ```bash
+    docker network create -d macvlan \
+      --subnet=<subnet> \
+      --gateway=<network-gateway> \
+      -o parent=<lan-interface> \
+      macvlan_lan
+    ```
+
+    - Example values:
+      subnet: 192.168.1.0/24
+      network-gateway: 192.168.1.1
+      lan-interface: enp3s0
+
+2. Update the [networking .env](./networking/.env.example) file with a password and your desired LAN IP address for the Pi-hole application.
+3. Uncomment the `NETWORKING_DIRECTORY` variable in the [global .env](./.env.example) file.
 
 ## Customization
 
