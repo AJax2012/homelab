@@ -3,6 +3,7 @@ include:
   - authentik/compose.yaml
   - gitea/compose.yaml
   - n8n/compose.yaml
+  - networking/compose.yaml
   - open-webui/compose.yaml
   - portainer/compose.yaml
   - traefik/compose.yaml

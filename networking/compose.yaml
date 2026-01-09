@@ -1,0 +1,26 @@
+services:
+  pihole:
+    image: pihole/pihole:latest
+    container_name: pihole
+    hostname: pihole
+    restart: unless-stopped
+    ports:
+      - '53:53/tcp'
+      - '53:53/udp'
+      - '443:443/tcp'
+    networks:
+      macvlan_lan:
+        ipv4_address: ${PIHOLE_IP:?PIHOLE_IP not set for pihole}
+    environment:
+      TZ: ${TZ:-UTC}
+      WEBPASSWORD: ${WEBPASSWORD:?WEBPASSWORD not set for pihole}
+      FTLCONF_LOCAL_IPV4: ${PIHOLE_IP:?PIHOLE_IP not set for pihole}
+      FTLCONF_dns_listeningMode: 'ALL'
+    volumes:
+      - ./pihole/etc-pihole:/etc/pihole
+      - ./pihole/etc-dnsmasq.d:/etc/dnsmasq.d
+
+networks:
+  macvlan_lan:
+    external: true
+

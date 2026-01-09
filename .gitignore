@@ -1,4 +1,5 @@
 .env
+/networking/pihole
 /open-webui/data
 /traefik/config/certs
 .htpasswd
