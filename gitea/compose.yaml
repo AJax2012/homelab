@@ -12,7 +12,7 @@ services:
         condition: service_healthy
     networks:
       - traefik-proxy
-      - internal
+      - gitea-internal
     ports:
       - ${SSH_PORT:-22}:22
     healthcheck:
@@ -53,7 +53,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD not set for gitea}
       - POSTGRES_DB=${POSTGRES_DB:?POSTGRES_DB not set for gitea}
     networks:
-      - internal
+      - gitea-internal
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -62,22 +62,17 @@ services:
       timeout: 5s
       retries: 5
 
-  runner:
+  gitea-runner:
     image: gitea/act_runner:latest
     container_name: gitea-runner
     restart: unless-stopped
     env_file:
       - .env
-    depends_on:
-      gitea:
-        condition: service_healthy
-        restart: true
-    networks:
-      - internal
     environment:
-      - GITEA_INSTANCE_URL=http://gitea:3000
+      - GITEA_INSTANCE_URL=https://${SUBDOMAIN:-gitea}.${DOMAIN_NAME:?DOMAIN_NAME not set}
       - GITEA_RUNNER_NAME=docker-runner
       - GITEA_RUNNER_REGISTRATION_TOKEN=${GITEA_RUNNER_REGISTRATION_TOKEN}
+      - GITEA_RUNNER_LABELS=${GITEA_RUNNER_LABELS:-ubuntu-latest,docker}
     volumes:
       - runner-data:/data
       - /var/run/docker.sock:/var/run/docker.sock
@@ -85,7 +80,7 @@ services:
 networks:
   traefik-proxy:
     external: true
-  internal:
+  gitea-internal:
     internal: true
 
 volumes:
