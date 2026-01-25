@@ -1,0 +1,28 @@
+services:
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: unless-stopped
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./provisioning:/etc/grafana/provisioning
+    env_file:
+      - .env
+    networks:
+      - traefik-proxy
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik-proxy"
+      - "traefik.http.routers.grafana.rule=Host(`${SUBDOMAIN:-grafana}.${DOMAIN_NAME:?DOMAIN_NAME not set}`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls=true"
+      - "traefik.http.routers.grafana.tls.certresolver=cloudflare"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+      - "traefik.http.services.grafana.loadbalancer.server.scheme=http"
+
+volumes:
+  grafana_data:
+
+networks:
+  traefik-proxy:
+    external: true

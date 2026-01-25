@@ -3,6 +3,7 @@ include:
   - authentik/compose.yaml
   - dockhand/compose.yaml
   - gitea/compose.yaml
+  - grafana/compose.yaml
   - homebridge/compose.yaml
   - homepage/compose.yaml
   - n8n/compose.yaml
@@ -20,6 +21,10 @@ services:
       traefik:
         condition: service_started
   gitea:
+    depends_on:
+      traefik:
+        condition: service_started
+  grafana:
     depends_on:
       traefik:
         condition: service_started
