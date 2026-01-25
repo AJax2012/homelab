@@ -24,6 +24,11 @@
             type: gitea
             url: https://{{HOMEPAGE_VAR_GITEA}}
             key: "{{HOMEPAGE_VAR_GITEA_TOKEN}}"
+    - Grafana:
+        href: https://{{HOMEPAGE_VAR_GRAFANA}}
+        description: Logging and service monitoring
+        icon: grafana.png
+        siteMonitor: https://{{HOMEPAGE_VAR_GRAFANA}}
 
 - Home:
     - Home Assistant:
