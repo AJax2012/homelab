@@ -3,7 +3,11 @@
 This is the public repository for my homelab. Please note, this is for a small homelab instance, not a production environment. Currently, the services included are:
 
 - [Authentik](https://goauthentik.io/) for SSO.
+- [Dockhand](https://dockhand.pro/) for in-depth docker container management
 - [Gitea](https://about.gitea.com/) for code repository
+- [Grafana](https://grafana.com/) for monitoring and log visualization
+- [Homebridge](https://homebridge.io/) for Apple Home integrations with HomeKit
+- [Homepage](https://gethomepage.dev/) for Homelab dashboard
 - [n8n](https://n8n.io/) for automated AI workflows
 - [Open Web UI](https://openwebui.com/) for local ChatGPT replacement
 - [Pi-hole](https://pi-hole.net/) for local DNS and DNS forwarding
@@ -13,14 +17,17 @@ This is the public repository for my homelab. Please note, this is for a small h
 ## Table of Contents
 
 - [Installation](#installation)
+  - [Dockhand](#dockhand)
   - [Setting up Pi-hole](#setting-up-pi-hole)
 - [Customization](#customization)
   - [Disabling Services](#disabling-services)
   - [Creating New Services](#creating-new-services)
 - [Using Authentik as an Auth Provider](#using-authentik-as-an-auth-provider)
+  - [Grafana with Authentik](#grafana-with-authentik)
   - [Open WebUI with Authentik](#open-webui-with-authentik)
   - [Traefik Dashboard: Migrating from Basic Auth to Authentik](#traefik-dashboard-migrating-from-basic-auth-to-authentik)
 - [Basic Troubleshooting](#basic-troubleshooting)
+- [Homepage Dashboard Setup](#homepage-dashboard-setup)
 - [Future Plans](#future-plans)
 - [Uninstall](#uninstall)
 
@@ -40,6 +47,10 @@ NOTE: This has only been tested on ubuntu server.
 4. run `docker compose up -d` from the root folder.
     - if you want to run single services (along with traefik), run `./homelab.sh start <service>`.
     - If you want to know more about the [homelab.sh](./homelab.sh) tool, you can run `./homelab.sh -h` to get the help dialogue.
+
+### Dockhand
+
+A few important things to note about [Dockhand](https://dockhand.pro/) - it gives anyone who has access to it a *lot* of power over your docker containers. I would highly recommend locking this down with Authentik SSO before most other applications and disallowing user sign-up. In return though, you get docker container scanning, automatic updates, alerts, etc. It's a great tool for a docker power user.
 
 ### Setting up Pi-hole
 
@@ -110,6 +121,38 @@ networks:
 
 [Authentik](https://goauthentik.io/) allows you to set up SSO for your applications. Gitea, Open WebUI, and Portainer could all be set up using Open ID Connect (OIDC). Their [Integrations](https://integrations.goauthentik.io/) documentation is very thorough and should be fairly easy to follow. I had to set up the Traefik Dashboard as a [forwardAuth](https://docs.goauthentik.io/add-secure-apps/providers/proxy/server_traefik/) provider, which means it requires a little more setup before you can get it working. See the section below for more details.
 
+### Grafana with Authentik
+
+As far as I can tell, users can't sync local user accounts with Grafana, or at least, I couldn't get it to work and I found a few people on different forums having issues with it as well. Once a user is created, it's actually pretty easy to update the OAuth settings, then update the user permissions.
+
+Steps to configure:
+
+1. Follow the instructions [in the documentation](https://integrations.goauthentik.io/monitoring/grafana/#create-an-application-and-provider-in-authentik) to create a provider and application in Authentik for Grafana using OAuth2/OpenID Provider.
+2. Setup [.env](./grafana/.env.example) variables:
+    - Copy and paste the ClientID and Client Secret.
+    - Ensure the other environment variables are correct
+3. Start up Grafana using your preferred method.
+4. Log into the user interface:
+    - Username: "admin"
+    - Password: value for `GF_SECURITY_ADMIN_PASSWORD` in the .env file.
+5. Navigate to Administration => Authentication => Generic SSO. It should be "enabled".
+6. Click "Enter OpenID Connect Discovery Url". Copy and paste the following, but update the variables in `${}`:
+    - `https://${AUTHENTIK_SUBDOMAIN}.${DOMAIN_NAME}/application/o/open-web-ui/.well-known/openid-configuration`
+7. Under "User Mappings", verify the following are correct. This will allow the admin user to configure users at will rather than auto-syncing roles.
+    - Enable "Allow sign up"
+    - Disable "Allow assign Grafana Admin"
+    - Enable "Skip organization role sync"
+8. Logout of admin user
+9. Login using Authentik to create the user
+10. Logout of new user
+11. Navigate to `https://${AUTHENTIK_SUBDOMAIN}.${DOMAIN_NAME}/login?disableAutoLogin`
+12. Login with admin user credentials
+13. Adjust the new user permissions as needed
+14. Logout of admin user
+15. Login using Authentik
+16. Verify SSO user has correct permissions
+17. (Recommended) Disable default admin user
+
 ### Open WebUI with Authentik
 
 This is explained in the documentation, but this is set up in the Open WebUI's [.env](./open-webui/.env.example) file rather than in the application UI, like most other applications. Once you update the environment variables, restart Open WebUI's docker container and it will be behind the Authentik auth provider.
@@ -127,13 +170,20 @@ In order to migrate your traefik dashboard from basicAuth to forwardAuth, do the
 
 You should now see the traefik dashboard protected by Authentik rather than username/password.
 
+## Homepage Dashboard Setup
+
+[Homepage](https://gethomepage.dev/) is a home dashboard for all of your services. I would recommend going through the [config](./homepage/config/) folder to review all of the configurations, though it's easy to update while the docker container is running. For syntax and other help, review [the documentation](https://gethomepage.dev/configs/). A couple of quick notes about the configuration I'm currently syncing:
+
+1. All of the routes are currently found in the [.env](./homepage/.env.example) file so they can be used as variables in the [services.yaml](./homepage/config/services.yaml) file. I would recommend going through the services file to add or remove services that you may not need. for example, I have Home Assistant in there, which I run on a separate computer rather than a docker container on my homelab. If you don't have this, you'll want to remove that from the services file. I also have links to my Synology NAS in there, which you may want to remove.
+2. Several of the services in the [services.yaml](./homepage/config/services.yaml) file have auth tokens found in the [.env](./homepage/.env.example) file. You'll need to generate those before they work for you.
+3. Latitude and Longitude are included in the [.env](./homepage/.env.example) file for the weather application. If you don't wish to get your location, you can comment them out and use your browser's current location. You will need to accept the popup that results, but it still works great.
+4. Since I assume almost everyone downloading this has a [Github](https://github.com) account, I added a bookmark to Github with an env variable to set your account. I also added a couple of other bookmarks. Feel free to remove them in the [bookmarks.yaml](./homepage/config/bookmarks.yaml) file.
+
 ## Future Plans
 
 I plan on adding the following services in the future. I'm not sure beyond that.
 
-- [Grafana](https://grafana.com/) for more advanced container troubleshooting.
 - Centralized logging.
-- A full dashboard for navigating.
 
 I would also like to make future improvements for ease of use:
 
