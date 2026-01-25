@@ -1,0 +1,11 @@
+:root {
+  --text-xs: 12px
+}
+
+.flex-1 {
+  font-size: 20px;
+}
+
+#information-widgets-right > .widget-container {
+  padding-left: 20px;
+}

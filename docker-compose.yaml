@@ -3,6 +3,8 @@ include:
   - authentik/compose.yaml
   - dockhand/compose.yaml
   - gitea/compose.yaml
+  - homebridge/compose.yaml
+  - homepage/compose.yaml
   - n8n/compose.yaml
   - ${NETWORKING_DIRECTORY:-fake-service}/compose.yaml
   - open-webui/compose.yaml
@@ -18,6 +20,14 @@ services:
       traefik:
         condition: service_started
   gitea:
+    depends_on:
+      traefik:
+        condition: service_started
+  homebridge:
+    depends_on:
+      traefik:
+        condition: service_started
+  homepage:
     depends_on:
       traefik:
         condition: service_started

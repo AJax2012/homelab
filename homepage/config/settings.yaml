@@ -1,0 +1,22 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/settings/
+
+title: Homelab
+hideVersion: true
+color: slate
+useEqualHeights: true
+quicklaunch:
+  searchDescriptions: true
+  hideInternetSearch: true
+  showSearchSuggestions: true
+  hideVisitURL: true
+  provider: google # google, duckduckgo, bing, baidu, brave or custom
+
+background:
+  image: https://wallpapercave.com/wp/wp12958069.jpg
+  saturate: 100 # 0, 50, 100... see https://tailwindcss.com/docs/backdrop-saturate
+  brightness: 25 # 0, 50, 75... see https://tailwindcss.com/docs/backdrop-brightness
+  opacity: 10 # 0-100
+
+bookmarksStyle: icons

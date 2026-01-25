@@ -1,0 +1,14 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/bookmarks
+
+- Bookmarks:
+    - Github:
+        - icon: github-light.png
+          href: https://github.com/{{HOMEPAGE_VAR_GITHUB_USERNAME}}
+    - Gmail:
+        - icon: gmail.png
+          href: https://mail.google.com
+    - YouTube:
+        - icon: youtube.png
+          href: https://youtube.com

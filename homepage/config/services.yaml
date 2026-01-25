@@ -1,0 +1,86 @@
+---
+# For configuration options and examples, please see:
+# https://gethomepage.dev/configs/services/
+
+- Security:
+    - Authentik:
+        href: https://{{HOMEPAGE_VAR_AUTHENTIK}}
+        description: Homelab SSO
+        icon: authentik.png
+        siteMonitor: https://{{HOMEPAGE_VAR_AUTHENTIK}}
+        widget:
+            type: authentik
+            url: "https://{{HOMEPAGE_VAR_AUTHENTIK}}"
+            key: "{{HOMEPAGE_VAR_AUTHENTIK_TOKEN}}"
+            version: 2
+
+- Developer:
+    - Gitea:
+        href: https://{{HOMEPAGE_VAR_GITEA}}
+        description: Git repository
+        icon: gitea.png
+        siteMonitor: https://{{HOMEPAGE_VAR_GITEA}}
+        widget:
+            type: gitea
+            url: https://{{HOMEPAGE_VAR_GITEA}}
+            key: "{{HOMEPAGE_VAR_GITEA_TOKEN}}"
+
+- Home:
+    - Home Assistant:
+        href: http://{{HOMEPAGE_VAR_HOMEASSISTANT}}
+        description: Home automation
+        icon: home-assistant.png
+        siteMonitor: https://{{HOMEPAGE_VAR_HOMEASSISTANT}}
+    - Homebridge:
+        href: https://{{HOMEPAGE_VAR_HOMEBRIDGE}}
+        description: Link for Apple Home for different services
+        icon: homebridge.png
+        siteMonitor: https://{{HOMEPAGE_VAR_HOMEBRIDGE}}
+
+- NAS:
+    - Synology:
+        href: https://{{HOMEPAGE_VAR_SYNOLOGY}}
+        description: NAS homepage
+        icon: synology-drive.png
+        siteMonitor: https://{{HOMEPAGE_VAR_SYNOLOGY}}
+    - Synology Photos:
+        href: https://{{HOMEPAGE_VAR_SYNOLOGY}}/?launchApp=SYNO.Foto.AppInstance#/personal_space/timeline
+        description: Photos application for Synology
+        icon: synology-photos.png
+        siteMonitor: https://{{HOMEPAGE_VAR_SYNOLOGY}}
+
+- Docker:
+    - Dockhand:
+        href: https://{{HOMEPAGE_VAR_DOCKHAND}}
+        description: Advanced docker image manager
+        icon: dockhand.png
+        siteMonitor: https://{{HOMEPAGE_VAR_DOCKHAND}}
+    - Portainer:
+        href: https://{{HOMEPAGE_VAR_PORTAINER}}
+        description: Basic docker image manager
+        icon: si-portainer-#13BEF9
+        siteMonitor: https://{{HOMEPAGE_VAR_PORTAINER}}
+
+- AI:
+    - Open WebUI:
+        href: https://{{HOMEPAGE_VAR_OPEN_WEBUI}}
+        description: Webpage for interacting with local AI instances
+        icon: open-webui.png
+        siteMonitor: https://{{HOMEPAGE_VAR_OPEN_WEBUI}}
+    - N8N:
+        href: https://{{HOMEPAGE_VAR_N8N}}
+        description: Automate with AI
+        icon: n8n.png
+        siteMonitor: https://{{HOMEPAGE_VAR_N8N}}
+
+- Networking:
+    - Traefik:
+        href: https://{{HOMEPAGE_VAR_TRAEFIK}}
+        description: Reverse proxy dashboard
+        icon: traefik-proxy.png
+        siteMonitor: https://{{HOMEPAGE_VAR_TRAEFIK}}
+    - Pi-hole:
+        href: https://{{HOMEPAGE_VAR_PIHOLE}}
+        description: Ad blocker admin UI
+        icon: pi-hole.png
+        siteMonitor: https://{{HOMEPAGE_VAR_PIHOLE}}
