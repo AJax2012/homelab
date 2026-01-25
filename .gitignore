@@ -3,3 +3,5 @@
 /open-webui/data
 /traefik/config/certs
 .htpasswd
+/homepage/config/logs
+/homebridge/data
