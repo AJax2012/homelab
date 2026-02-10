@@ -11,6 +11,7 @@ include:
   - open-webui/compose.yaml
   - portainer/compose.yaml
   - traefik/compose.yaml
+  - uptime-kuma/compose.yaml
 services:
   authentik-server:
     depends_on:
@@ -45,6 +46,10 @@ services:
       traefik:
         condition: service_started
   portainer:
+    depends_on:
+      traefik:
+        condition: service_started
+  uptime-kuma:
     depends_on:
       traefik:
         condition: service_started
