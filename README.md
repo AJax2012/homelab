@@ -13,6 +13,7 @@ This is the public repository for my homelab. Please note, this is for a small h
 - [Pi-hole](https://pi-hole.net/) for local DNS and DNS forwarding
 - [Portainer](https://www.portainer.io/) for docker dashboard
 - [Traefik](https://traefik.io/traefik) for reverse proxy
+- [Uptime Kuma](https://uptime.kuma.pet/) for service monitoring and status notifications.
 
 ## Table of Contents
 
